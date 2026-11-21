@@ -1,46 +1,54 @@
-# Astro Starter Kit: Basics
+# Slide Deck Studio
+
+Astro and Reveal.js project for building presentations with a shared blue-green theme and Kainos logo.
+
+## Requirements
+
+- Node.js `22.23.4` or newer
+- npm
+
+## Start the project
+
+From the project root:
 
 ```sh
-npm create astro@latest -- --template basics
+nvm use 22.23.4
+npm install
+npm run dev -- --background
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+Open the root presentation at <http://localhost:4321/>. The presenter-notes editor is at <http://localhost:4321/notes/>.
 
-## 🚀 Project Structure
+Manage the background dev server with:
 
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+```sh
+npx astro dev status
+npx astro dev logs
+npx astro dev stop
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## Edit the deck
 
-## 🧞 Commands
+The presentation lives in `src/pages/index.astro`. Each `<DeckSlide>` is one slide; edit the text inside its headings, paragraphs, and list items. Use the existing slide classes for familiar layouts, and add new layout styles to `src/styles/deck-theme.css` when needed.
 
-All commands are run from the root of the project, from a terminal:
+The shared setup is in:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+- `src/layouts/DeckLayout.astro`: Reveal.js, theme CSS, and presentation controls.
+- `src/components/DeckSlide.astro`: shared logo and optional cover orbit.
+- `src/config/deck-theme.ts`: logo path and alt text.
+- `src/styles/deck-theme.css`: colors, typography, and shared slide styles.
 
-## 👀 Want to learn more?
+## Presenter notes
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Edit notes in the browser at `/notes/` and click **Save notes**. Changes are saved to `src/data/presenter-notes.json`. The editor writes files through a dev-only local endpoint, so it requires the local dev server and is not included in the static production build.
+
+Each notes entry has a stable slide `id`, title, and script. `src/pages/index.astro` passes the matching script into `DeckSlide` using its `notes` prop. To add a slide, add its markup and a matching notes entry.
+
+Press `S` during the presentation to open Reveal.js Speaker View. The current slide stays on the left, its notes appear on the right, and the upcoming-slide preview is hidden. Notes are not shown on the audience slide.
+
+## Build and preview
+
+```sh
+npm run build
+npm run preview
+```

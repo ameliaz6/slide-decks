@@ -1,0 +1,290 @@
+---
+import "reveal.js/reveal.css";
+import "../styles/deck-theme.css";
+
+const { title = "Slide Deck" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#293b85" />
+        <title>{title}</title>
+    </head>
+    <body>
+        <main class="deck-frame">
+            <div class="reveal">
+                <div class="slides">
+                    <slot />
+                </div>
+            </div>
+        </main>
+    </body>
+</html>
+
+<script>
+    import Reveal from "reveal.js";
+    import Notes from "reveal.js/plugin/notes";
+
+    const root = document.querySelector<HTMLElement>(".reveal");
+
+    if (root) {
+        const openWindow = window.open.bind(window) as (
+            url?: string | URL,
+            target?: string,
+            features?: string,
+        ) => Window | null;
+
+        window.open = (
+            url?: string | URL,
+            target?: string,
+            features?: string,
+        ): Window | null => {
+            const popup = openWindow(url?.toString(), target, features);
+
+            if (target !== "reveal.js - Notes" || !popup) return popup;
+
+            let attempts = 0;
+            const styleTimer = window.setInterval(() => {
+                attempts += 1;
+
+                try {
+                    if (popup.closed) {
+                        window.clearInterval(styleTimer);
+                        return;
+                    }
+
+                    const popupDocument = popup.document;
+                    if (!popupDocument.querySelector("#speaker-controls"))
+                        return;
+
+                    if (
+                        !popupDocument.querySelector("#presenter-notes-layout")
+                    ) {
+                        const style = popupDocument.createElement("style");
+                        style.id = "presenter-notes-layout";
+                        style.textContent = `
+                            :root { color-scheme: dark; }
+                            html, body {
+                                width: 100% !important;
+                                height: 100% !important;
+                                margin: 0 !important;
+                                overflow: hidden !important;
+                                background: #18234f !important;
+                                color: #dce5ff !important;
+                                font-family: 'Century Gothic', 'Avenir Next', Futura, monospace, sans-serif !important;
+                            }
+                            #presenter-header {
+                                position: absolute;
+                                z-index: 20;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                height: 56px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                box-sizing: border-box;
+                                padding: 0 24px;
+                                border-bottom: 1px solid rgba(181, 199, 255, .14);
+                                background: #11183d;
+                                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                            }
+                            .presenter-brand {
+                                display: flex;
+                                align-items: center;
+                                gap: 22px;
+                                color: #737cae;
+                                font-size: 13px;
+                                letter-spacing: .12em;
+                                text-transform: uppercase;
+                            }
+                            .presenter-brand strong { color: #9b82ff; font-weight: 700; }
+                            .presenter-clock-wrap { display: flex; align-items: center; gap: 16px; }
+                            #presenter-clock { color: #edf1ff; font-size: 18px; letter-spacing: .06em; }
+                            #presenter-reset {
+                                width: 34px; height: 34px; border: 1px solid rgba(181,199,255,.12);
+                                border-radius: 50%; background: #1b2557; color: #99a4d8;
+                                cursor: pointer; font-size: 16px;
+                            }
+                            #current-slide {
+                                position: absolute !important;
+                                top: 56px !important;
+                                left: 0 !important;
+                                width: 60% !important;
+                                height: calc(100% - 56px) !important;
+                                box-sizing: border-box !important;
+                                padding: 24px !important;
+                                background: #1d2a63 !important;
+                            }
+                            #current-slide iframe, #current-slide .slide {
+                                border: 0 !important;
+                                border-radius: 4px !important;
+                            }
+                            #current-slide .label,
+                            #upcoming-slide .label {
+                                display: none !important;
+                            }
+                            #upcoming-slide {
+                                position: absolute !important;
+                                display: block !important;
+                                top: 56px !important;
+                                right: 0 !important;
+                                left: 60% !important;
+                                width: 40% !important;
+                                height: 320px !important;
+                                overflow: hidden !important;
+                                box-sizing: border-box !important;
+                                padding: 62px 24px 18px !important;
+                                border-left: 1px solid rgba(181,199,255,.12) !important;
+                                background: #18234f !important;
+                            }
+                            #upcoming-slide iframe {
+                                display: block !important;
+                                width: 100% !important;
+                                height: 100% !important;
+                                min-height: 0 !important;
+                                border: 0 !important;
+                                border-radius: 4px !important;
+                                background: #1d2a63 !important;
+                            }
+                            #upcoming-slide:before {
+                                content: 'NEXT STEP';
+                                position: absolute;
+                                z-index: 3;
+                                top: 22px;
+                                left: 24px;
+                                color: #737cae;
+                                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                                font-size: 13px;
+                                letter-spacing: .14em;
+                            }
+                            #speaker-controls {
+                                position: absolute !important;
+                                top: 376px !important;
+                                right: 0 !important;
+                                left: 60% !important;
+                                width: 40% !important;
+                                height: calc(100% - 376px) !important;
+                                box-sizing: border-box !important;
+                                padding: 30px 24px 24px !important;
+                                overflow-y: auto !important;
+                                border-left: 1px solid rgba(181,199,255,.12) !important;
+                                background: #18234f !important;
+                                font-size: 20px !important;
+                            }
+                            #speaker-controls:before {
+                                content: 'SPEAKER NOTES';
+                                display: block;
+                                margin-bottom: 22px;
+                                color: #737cae;
+                                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                                font-size: 13px;
+                                letter-spacing: .14em;
+                            }
+                            #speaker-controls .speaker-controls-time,
+                            #speaker-controls .speaker-controls-pace,
+                            #speaker-controls .speaker-controls-notes h4,
+                            #speaker-controls .label {
+                                display: none !important;
+                            }
+                            #speaker-controls .speaker-controls-notes { padding: 0 !important; }
+                            #speaker-controls .speaker-controls-notes .value {
+                                color: #cbd5f5 !important;
+                                font-size: 18px !important;
+                                line-height: 1.55 !important;
+                            }
+                            @media (max-width: 760px) {
+                                #current-slide { width: 48% !important; }
+                                #upcoming-slide, #speaker-controls { left: 48% !important; width: 52% !important; }
+                            }
+                        `;
+                        popupDocument.head.append(style);
+
+                        if (!popupDocument.querySelector("#presenter-header")) {
+                            const header = popupDocument.createElement("div");
+                            header.id = "presenter-header";
+                            header.innerHTML = `
+                                <div class="presenter-brand"><strong>▣ PRESENTER VIEW</strong><span>${popup.opener?.document.title ?? "Slide Deck"}</span></div>
+                                <div class="presenter-clock-wrap"><span id="presenter-clock">00:00:00</span><button id="presenter-reset" type="button" aria-label="Reset timer">↻</button></div>
+                            `;
+                            popupDocument.body.prepend(header);
+
+                            let elapsed = 0;
+                            let startedAt = Date.now();
+                            const clock =
+                                header.querySelector<HTMLElement>(
+                                    "#presenter-clock",
+                                );
+                            const reset =
+                                header.querySelector<HTMLButtonElement>(
+                                    "#presenter-reset",
+                                );
+
+                            const updateClock = () => {
+                                elapsed = Math.floor(
+                                    (Date.now() - startedAt) / 1000,
+                                );
+                                if (clock) {
+                                    const hours = String(
+                                        Math.floor(elapsed / 3600),
+                                    ).padStart(2, "0");
+                                    const minutes = String(
+                                        Math.floor((elapsed % 3600) / 60),
+                                    ).padStart(2, "0");
+                                    const seconds = String(
+                                        elapsed % 60,
+                                    ).padStart(2, "0");
+                                    clock.textContent = `${hours}:${minutes}:${seconds}`;
+                                }
+                            };
+
+                            updateClock();
+                            const popupWindow = popupDocument.defaultView;
+                            const timer = popupWindow?.setInterval(
+                                updateClock,
+                                1000,
+                            );
+
+                            reset?.addEventListener("click", () => {
+                                startedAt = Date.now();
+                                elapsed = 0;
+                                updateClock();
+                            });
+
+                            popupWindow?.addEventListener("unload", () => {
+                                if (timer) popupWindow.clearInterval(timer);
+                            });
+                        }
+                    }
+
+                    popup.focus();
+                } catch {
+                    window.clearInterval(styleTimer);
+                }
+            }, 500);
+
+            return popup;
+        };
+
+        const deck = new Reveal(root, {
+            width: 1600,
+            height: 900,
+            margin: 0,
+            minScale: 0.25,
+            maxScale: 2,
+            controls: true,
+            progress: true,
+            hash: true,
+            center: false,
+            transition: "fade",
+            transitionSpeed: "slow",
+            backgroundTransition: "fade",
+            plugins: [Notes],
+        });
+
+        void deck.initialize();
+    }
+</script>

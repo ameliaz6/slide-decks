@@ -1,11 +1,156 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import DeckLayout from "../layouts/DeckLayout.astro";
+import DeckSlide from "../components/DeckSlide.astro";
+import presenterNotes from "../data/presenter-notes.json";
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const notesById = Object.fromEntries(
+	presenterNotes.slides.map((slide) => [slide.id, slide.notes]),
+);
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<DeckLayout title="Platforms">
+	<DeckSlide class="title-slide" orbit notes={notesById["platforms-cover"]}>
+		<div class="cover-copy">
+			<h1>Platforms</h1>
+		</div>
+	</DeckSlide>
+
+	<DeckSlide class="automation-slide" notes={notesById["automation-intro"]}>
+		<div class="automation-copy">
+			<p class="automation-eyebrow">AI-Native Academy 2025</p>
+			<h1>CI/CD &amp; Automation</h1>
+			<p
+				class="automation-subtitle fragment fade-up"
+				data-fragment-index="0"
+			>
+				From Code to Production
+			</p>
+		</div>
+	</DeckSlide>
+
+	<DeckSlide class="pipeline-slide" notes={notesById["delivery-flow"]}>
+		<div class="pipeline-copy">
+			<p class="pipeline-eyebrow">A repeatable delivery flow</p>
+			<h2>One path from commit to production</h2>
+			<ol class="pipeline-steps">
+				<li class="fragment fade-up" data-fragment-index="0">
+					<span class="step-number">01</span>
+					<h3>Commit</h3>
+					<p>Code change</p>
+				</li>
+				<li class="fragment fade-up" data-fragment-index="1">
+					<span class="step-number">02</span>
+					<h3>Build</h3>
+					<p>Automated checks</p>
+				</li>
+				<li class="fragment fade-up" data-fragment-index="2">
+					<span class="step-number">03</span>
+					<h3>Release</h3>
+					<p>Production</p>
+				</li>
+			</ol>
+		</div>
+	</DeckSlide>
+
+	<DeckSlide
+		class="statement-slide"
+		notes={notesById["automation-principle"]}
+	>
+		<div class="statement-copy">
+			<p class="statement-eyebrow">The principle</p>
+			<h2>
+				Automate the repeatable.
+				<br />
+				<span class="fragment fade-up" data-fragment-index="0">
+					Make room for the important.
+				</span>
+			</h2>
+		</div>
+	</DeckSlide>
+
+	<DeckSlide
+		class="comparison-slide light-slide"
+		notes={notesById["docker-vs-containerd"]}
+	>
+		<div class="comparison-copy">
+			<p class="light-eyebrow">Understanding container engines</p>
+			<h2>Docker vs containerd</h2>
+			<div class="comparison-panels">
+				<article class="comparison-panel">
+					<h3>Docker</h3>
+					<ul class="detail-list">
+						<li>Full-featured development platform</li>
+						<li>Networking, volumes and Compose</li>
+						<li>Higher overhead</li>
+					</ul>
+				</article>
+				<article class="comparison-panel">
+					<h3>containerd</h3>
+					<ul class="detail-list">
+						<li>Focused container runtime</li>
+						<li>Used internally by Docker</li>
+						<li>Lower resource usage</li>
+					</ul>
+				</article>
+			</div>
+		</div>
+	</DeckSlide>
+
+	<DeckSlide class="fit-slide light-slide" notes={notesById["aci-fit"]}>
+		<div class="comparison-copy">
+			<p class="light-eyebrow">Azure Container Instances</p>
+			<h2>When to use ACI</h2>
+			<div class="comparison-panels fit-panels">
+				<article class="comparison-panel fit-panel">
+					<h3>Good fit</h3>
+					<ul class="detail-list">
+						<li>Quick demos and testing</li>
+						<li>Batch jobs and scheduled tasks</li>
+						<li>CI/CD build agents</li>
+						<li>Isolated task execution</li>
+					</ul>
+				</article>
+				<article class="comparison-panel fit-panel not-ideal">
+					<h3>Less suitable</h3>
+					<ul class="detail-list">
+						<li>High-traffic web applications</li>
+						<li>Complex multi-container systems</li>
+						<li>Workloads that need autoscaling</li>
+						<li>Long-running production services</li>
+					</ul>
+				</article>
+			</div>
+		</div>
+	</DeckSlide>
+
+	<DeckSlide
+		class="team-challenges-slide"
+		notes={notesById["team-challenges"]}
+	>
+		<div class="team-challenges-copy">
+			<p class="team-challenges-eyebrow">Team reflection</p>
+			<h2>Challenges we faced</h2>
+			<div class="challenge-grid">
+				<article class="challenge-point">
+					<p class="challenge-number">01</p>
+					<h3>Communication</h3>
+					<p>
+						Updates and expectations did not always reach everyone.
+					</p>
+				</article>
+				<article class="challenge-point">
+					<p class="challenge-number">02</p>
+					<h3>Lack of structure</h3>
+					<p>
+						Roles, priorities, and next steps were not always clear.
+					</p>
+				</article>
+				<article class="challenge-point">
+					<p class="challenge-number">03</p>
+					<h3>Questions left unasked</h3>
+					<p>Unclear points were not always raised early.</p>
+				</article>
+			</div>
+		</div>
+	</DeckSlide>
+</DeckLayout>

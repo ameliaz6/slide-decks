@@ -1,0 +1,321 @@
+---
+import presenterNotes from "../data/presenter-notes.json";
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="theme-color" content="#26377d" />
+        <title>Presenter Notes | {presenterNotes.presentation}</title>
+    </head>
+    <body>
+        <main class="notes-page">
+            <header class="notes-header">
+                <a class="back-link" href="/" aria-label="Back to presentation">&larr; Deck</a>
+                <img class="notes-logo" src="/logo.png" alt="Kainos" />
+                <p class="notes-eyebrow">{presenterNotes.presentation}</p>
+                <h1>Presenter notes</h1>
+            </header>
+
+            <div class="notes-editor">
+                <nav class="slide-picker" aria-label="Slides">
+                    {presenterNotes.slides.map((slide, index) => (
+                        <button
+                            class="slide-picker-button"
+                            type="button"
+                            data-slide-id={slide.id}
+                            data-slide-title={slide.title}
+                            aria-pressed={index === 0 ? "true" : "false"}
+                        >
+                            <span class="slide-picker-number">{String(index + 1).padStart(2, "0")}</span>
+                            <span>{slide.title}</span>
+                        </button>
+                    ))}
+                </nav>
+
+                <form id="notes-form" class="note-form">
+                    <p id="slide-counter" class="notes-eyebrow"></p>
+                    <h2 id="active-slide-title"></h2>
+                    <label for="note-content">Speaker script</label>
+                    <textarea id="note-content" rows="12" spellcheck="true"></textarea>
+                    <div class="note-form-footer">
+                        <p id="note-status" role="status" aria-live="polite"></p>
+                        <button class="save-button" type="submit">Save notes</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </body>
+</html>
+
+<script>
+    import presenterNotes from "../data/presenter-notes.json";
+
+    const form = document.querySelector<HTMLFormElement>("#notes-form");
+    const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-slide-id]"));
+    const textarea = document.querySelector<HTMLTextAreaElement>("#note-content");
+    const activeTitle = document.querySelector<HTMLElement>("#active-slide-title");
+    const counter = document.querySelector<HTMLElement>("#slide-counter");
+    const status = document.querySelector<HTMLElement>("#note-status");
+    const slides = presenterNotes.slides;
+    let notesById = Object.fromEntries(slides.map((slide) => [slide.id, slide.notes]));
+    let activeId = slides[0]?.id ?? "";
+
+    function selectSlide(id: string) {
+        if (!textarea || !activeTitle || !counter || !activeId) return;
+
+        notesById[activeId] = textarea.value;
+        activeId = id;
+        const index = slides.findIndex((slide) => slide.id === id);
+        const slide = slides[index];
+
+        if (!slide) return;
+
+        activeTitle.textContent = slide.title;
+        counter.textContent = `Slide ${index + 1} of ${slides.length}`;
+        textarea.value = notesById[id] ?? "";
+        buttons.forEach((button) => {
+            button.setAttribute("aria-pressed", button.dataset.slideId === id ? "true" : "false");
+        });
+    }
+
+    buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+            const id = button.dataset.slideId;
+            if (id) selectSlide(id);
+        });
+    });
+
+    if (activeId) selectSlide(activeId);
+
+    void fetch("/__presenter-notes")
+        .then(async (response) => {
+            if (!response.ok) throw new Error("Local notes service is unavailable.");
+            const saved = await response.json();
+            notesById = Object.fromEntries(saved.slides.map((slide: { id: string; notes: string }) => [slide.id, slide.notes]));
+            if (activeId && textarea) textarea.value = notesById[activeId] ?? "";
+        })
+        .catch(() => {
+            if (status) status.textContent = "Start the local Astro dev server to load and save notes.";
+        });
+
+    form?.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (activeId && textarea) notesById[activeId] = textarea.value;
+        if (status) status.textContent = "Saving...";
+
+        try {
+            const response = await fetch("/__presenter-notes", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(notesById),
+            });
+
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error ?? "Could not save notes.");
+            if (status) status.textContent = "Saved to src/data/presenter-notes.json";
+        } catch (error) {
+            if (status) status.textContent = error instanceof Error ? error.message : "Could not save notes.";
+        }
+    });
+</script>
+
+<style>
+    :root {
+        color: #26377d;
+        background: #f2f7fb;
+        font-family: "Century Gothic", "Avenir Next", Futura, sans-serif;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        background: linear-gradient(130deg, #f3f8fc 0%, #e8f4ed 100%);
+    }
+
+    .notes-page {
+        width: min(100% - 64px, 1200px);
+        margin: 0 auto;
+        padding: 48px 0;
+    }
+
+    .notes-header {
+        position: relative;
+        padding: 30px 0 36px;
+        border-bottom: 1px solid rgba(38, 55, 125, 0.2);
+    }
+
+    .back-link {
+        color: #347b62;
+        font-size: 15px;
+        text-decoration: none;
+    }
+
+    .notes-logo {
+        position: absolute;
+        top: 24px;
+        right: 0;
+        width: 150px;
+        max-height: 44px;
+        object-fit: contain;
+        object-position: right center;
+        filter: brightness(0) saturate(100%) invert(19%) sepia(24%) saturate(1840%) hue-rotate(199deg) brightness(90%) contrast(92%);
+    }
+
+    .notes-eyebrow {
+        margin: 34px 0 10px;
+        color: #4c9a48;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 14px;
+        text-transform: uppercase;
+    }
+
+    h1 {
+        margin: 0;
+        font-size: 42px;
+        line-height: 1.15;
+    }
+
+    .notes-editor {
+        display: grid;
+        grid-template-columns: minmax(230px, 0.8fr) minmax(0, 1.8fr);
+        gap: 48px;
+        padding-top: 40px;
+    }
+
+    .slide-picker {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        border-top: 1px solid rgba(38, 55, 125, 0.2);
+    }
+
+    .slide-picker-button {
+        display: grid;
+        grid-template-columns: 38px 1fr;
+        gap: 10px;
+        align-items: start;
+        padding: 18px 10px;
+        border: 0;
+        border-bottom: 1px solid rgba(38, 55, 125, 0.2);
+        background: transparent;
+        color: #26377d;
+        font: inherit;
+        font-size: 15px;
+        line-height: 1.4;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .slide-picker-button[aria-pressed="true"] {
+        background: rgba(76, 154, 72, 0.1);
+    }
+
+    .slide-picker-number {
+        color: #4c9a48;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .note-form {
+        display: flex;
+        min-height: 470px;
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .note-form .notes-eyebrow {
+        margin: 0 0 10px;
+    }
+
+    h2 {
+        margin: 0 0 28px;
+        font-size: 28px;
+        line-height: 1.25;
+    }
+
+    label {
+        margin-bottom: 10px;
+        color: #435270;
+        font-size: 14px;
+    }
+
+    textarea {
+        width: 100%;
+        min-height: 300px;
+        flex: 1;
+        resize: vertical;
+        padding: 18px;
+        border: 1px solid rgba(38, 55, 125, 0.25);
+        border-radius: 2px;
+        background: rgba(255, 255, 255, 0.8);
+        color: #26377d;
+        font: inherit;
+        font-size: 17px;
+        line-height: 1.55;
+    }
+
+    textarea:focus-visible,
+    button:focus-visible,
+    a:focus-visible {
+        outline: 2px solid #4c9a48;
+        outline-offset: 3px;
+    }
+
+    .note-form-footer {
+        display: flex;
+        min-height: 68px;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+    }
+
+    #note-status {
+        margin: 0;
+        color: #4d607d;
+        font-size: 14px;
+    }
+
+    .save-button {
+        min-height: 42px;
+        padding: 0 20px;
+        border: 0;
+        border-radius: 2px;
+        background: #347b62;
+        color: #fff;
+        font: inherit;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .save-button:hover {
+        background: #28664f;
+    }
+
+    @media (max-width: 700px) {
+        .notes-page {
+            width: calc(100% - 40px);
+            padding: 20px 0;
+        }
+
+        .notes-editor {
+            grid-template-columns: 1fr;
+            gap: 28px;
+        }
+
+        .slide-picker {
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .note-form {
+            min-height: 420px;
+        }
+    }
+</style>

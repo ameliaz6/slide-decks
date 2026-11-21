@@ -1,0 +1,40 @@
+{
+  "presentation": "Platforms",
+  "slides": [
+    {
+      "id": "platforms-cover",
+      "title": "Platforms",
+      "notes": ""
+    },
+    {
+      "id": "automation-intro",
+      "title": "CI/CD & Automation",
+      "notes": ""
+    },
+    {
+      "id": "delivery-flow",
+      "title": "One path from commit to production",
+      "notes": ""
+    },
+    {
+      "id": "automation-principle",
+      "title": "Automate the repeatable. Make room for the important.",
+      "notes": ""
+    },
+    {
+      "id": "docker-vs-containerd",
+      "title": "Docker vs containerd",
+      "notes": ""
+    },
+    {
+      "id": "aci-fit",
+      "title": "When to use ACI",
+      "notes": ""
+    },
+    {
+      "id": "team-challenges",
+      "title": "Challenges we faced",
+      "notes": "Sometimes, we weren’t all getting the same updates, and it wasn’t clear who was doing what or what came next. When something didn’t make sense, we didn’t always ask about it straight away. So next time, we can keep each other in the loop, agree on clear next steps, and speak up when we’re unsure."
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+---
+import { deckBrand } from "../config/deck-theme";
+
+interface Props {
+  class?: string;
+  orbit?: boolean;
+  notes?: string;
+}
+
+const { class: className = "", orbit = false, notes = "" } = Astro.props;
+---
+
+<section class:list={["deck-slide", className]}>
+  {orbit && (
+    <svg
+      class="contour-art"
+      viewBox="0 0 760 940"
+      fill="none"
+      aria-hidden="true"
+    >
+      <circle class="orbit orbit-outer" cx="820" cy="470" r="510" />
+      <circle class="orbit orbit-middle" cx="820" cy="470" r="375" />
+      <circle class="orbit orbit-inner" cx="820" cy="470" r="240" />
+      <g class="orbiting-dot">
+        <circle class="orbit-dot" cx="390" cy="196" r="12" />
+      </g>
+      <g class="orbiting-dot orbiting-dot-reverse">
+        <circle
+          class="orbit-dot orbit-dot-secondary"
+          cx="445"
+          cy="470"
+          r="10"
+        />
+      </g>
+    </svg>
+  )}
+
+  {deckBrand.logoSrc && (
+    <img class="deck-logo" src={deckBrand.logoSrc} alt={deckBrand.logoAlt} />
+  )}
+  {notes.trim() && <aside class="notes">{notes}</aside>}
+  <slot />
+</section>
