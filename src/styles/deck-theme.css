@@ -63,7 +63,7 @@ body {
     position: absolute;
     z-index: 0;
     top: -34px;
-    right: -72px;
+    right: 0;
     width: 55%;
     height: 108%;
     overflow: visible;
@@ -105,7 +105,7 @@ body {
 .orbiting-dot-reverse {
     transform-box: view-box;
     transform-origin: 107.9% 50%;
-    animation: orbit-reverse 18s linear infinite;
+    animation: orbit-reverse 14s linear infinite;
 }
 
 .orbit-dot {
